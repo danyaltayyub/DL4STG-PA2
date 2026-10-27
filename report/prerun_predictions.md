@@ -9,7 +9,7 @@ Recorded before any experiment in "Testing the Baseline" (Tables 3–4, Figures 
 Inputs used: Figure 1 (training-motion statistics) and the reach estimate of Q2.3.
 Model A's test numbers for mirror, rotation and speed-up had not been computed when this was written.
 
-Status: _draft, awaiting the student's review_.
+Status: **Approved by the student without changes**. Recorded: 2026-10-27 15:20 PKT, before any experiment in Testing the Baseline.
 
 **Mirror test: should pass, approximately.**
 Figure 1(a) shows training motion in every direction with no empty sector, so a mirrored trajectory (θ → 180° − θ) is familiar motion. Only the digits look unfamiliar.
