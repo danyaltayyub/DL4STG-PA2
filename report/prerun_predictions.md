@@ -29,7 +29,7 @@ Model A's reach is 8 px per time step along each axis (Q2.3; up to 8√2 ≈ 11.
 Recorded before models B, C and D are trained, including any candidate design for model D.
 Inputs used: the Testing-the-Baseline results for model A (Tables 3–4, Figures 3–5) and the reach estimate of Q2.3.
 
-Status: _draft, awaiting the student's review_.
+Status: **Approved by the student without changes** on 2026-10-27 at 15:34 PKT. The text below was committed and pushed in `eeee372` at 15:34 PKT, before any model B, C or D (or D candidate) was trained. Only this status line was updated afterwards.
 
 Model B should fix the mirror and rotation failures (C_M and C_R several times smaller, and E_M and E_R close to its own E^(5)), because those failures come from unfamiliar appearance, but it should do nothing for speed.
 Model C should fix 2×, which is unfamiliar motion still within model A's 8-px reach, but keep failing at 3× (about 10 px/frame, beyond that reach for most directions), however much fast motion it sees in training.

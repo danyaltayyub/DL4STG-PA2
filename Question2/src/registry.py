@@ -1,7 +1,7 @@
 """Model names -> architecture, training speeds and augmentation."""
 from .models import ArchConfig, ConvLSTMForecaster, Blank, CopyLast, count_params
 
-ARCH_D = ArchConfig()  # placeholder until chosen on the validation split
+ARCH_D = ArchConfig(patch=8)  # chosen on the validation split by screen_d.py (results/metrics/d_screening.json)
 MAX_PARAMS_D = 721_176
 
 REGISTRY = {

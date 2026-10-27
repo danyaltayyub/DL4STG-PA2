@@ -2,7 +2,7 @@
 
 Tables and figures are numbered as in the handout. Code is in \texttt{Question2/} (\texttt{SPEC.md} restates
 the protocol; \texttt{checks.py}, \texttt{train.py}, \texttt{evaluate.py}). Every learned-model entry is
-\emph{mean (seed 0, seed 1)}. Errors are given to three significant figures, with scientific notation below
+\emph{mean (seed 0, seed 1)}; parameter counts are identical across seeds and given once. Errors are given to three significant figures, with scientific notation below
 $10^{-3}$. Unless stated otherwise, results are on the 1,000 test videos at 1$\times$ with $t=1$.
 Hardware: NVIDIA GeForce RTX~4060 Laptop GPU (8\,GB), PyTorch~2.9.0 (CUDA~12.8), float32.
 
@@ -100,8 +100,8 @@ one update. During the rollout the fed-back prediction plays the role of $u_\tau
 of Copy-last's (0.0641), and the two seeds agree closely (0.0224, 0.0216). Copy-last is worse than Blank because
 a stationary copy is wrong twice: it leaves ink where the digits were and none where they are now.
 \item \emph{Growth over the horizons.} Model A's error rises from $\mathrm{MSE}_1=0.0168$ to
-$\mathrm{MSE}_5=0.0259$ ($+54\%$). The first step costs most ($+21\%$); after that it grows by 6--7\% per horizon,
-while Blank's error stays flat. Figure~2 shows where the error comes from: positions stay roughly right, but every
+$\mathrm{MSE}_5=0.0259$ ($+54\%$). The first step costs most ($+21\%$); after that the increments shrink ($+11\%$, $+8\%$,
+$+7\%$), while Blank's error stays flat. Figure~2 shows where the error comes from: positions stay roughly right, but every
 step loses detail, and by $h=5$ the digits are blobs. Blurring is what a squared-error forecaster does under
 uncertainty, because it averages over plausible futures instead of committing to one sharp, possibly wrong, frame.
 \item \emph{Overlap.} In test video~0 the 5 and the 8 overlap in the inputs, and model A predicts one merged
@@ -243,7 +243,177 @@ it should succeed at 3$\times$ exactly where C fails, if reach is the limit.
 \end{itemize}
 
 \subsection{What Can Data Fix?}
-% Q2.11 (pre-registered), Table 5, Q2.12--Q2.14.
+\textbf{Q2.11} (approved by the student and committed and pushed at 2026-10-27 15:34 PKT, commit
+\texttt{eeee372}, before any of models B--D or any D candidate was trained; reproduced unchanged).
+
+\begin{quote}\small
+Model B should fix the mirror and rotation failures ($C_M$ and $C_R$ several times smaller, and $E_M$ and $E_R$
+close to its own $E^{(5)}$), because those failures come from unfamiliar appearance, but it should do nothing for
+speed. Model C should fix 2$\times$, which is unfamiliar motion still within model A's 8-px reach, but keep failing
+at 3$\times$ (about 10\,px/frame, beyond that reach for most directions), however much fast motion it sees in
+training. Only model D, with a larger reach and the same speed augmentation, should also handle 3$\times$; each of
+B, C and D may give up a little accuracy at 1$\times$.
+\end{quote}
+
+\textbf{Choosing model D (validation split only).}
+\begin{itemize}
+\item Three candidates were compared. Each has a one-step reach of 16\,px and at most 721,176 parameters.
+  \begin{itemize}
+  \item \emph{dil}: layer~2's $3\times3$ convolution dilated by 3; 480,784 parameters.
+  \item \emph{k5}: $5\times5$ kernels with 46 hidden channels; 709,520.
+  \item \emph{p8}: $8\times8$ folding; 594,496.
+  \end{itemize}
+\item Each was trained once (seed 0) under model D's protocol and scored on the 1,000 validation videos. The rule,
+fixed before any candidate was trained: lowest mean validation $E^{(2)}$ over 1$\times$, 2$\times$ and 3$\times$.
+\item \emph{p8} won (0.0302; \emph{dil} 0.0308). In its single run, \emph{k5} collapsed to an almost constant
+output (0.0395 at every speed); it was not tuned further.
+\item The full screen is in \texttt{Question2/results/metrics/d\_screening.json} (\texttt{screen\_d.py}).
+\end{itemize}
+
+\input{generated/table5}
+
+\textbf{Q2.12.} Model D is model A with $8\times8$ instead of $4\times4$ folding.
+\begin{itemize}
+\item \texttt{pixel\_unshuffle(x, 8)} turns a $1\times64\times64$ frame into $64\times8\times8$.
+\item Two ConvLSTM layers follow (64 hidden channels, $3\times3$ kernels).
+\item A $1\times1$ convolution maps 64 to 64 channels, then \texttt{pixel\_shuffle}$(\cdot,8)$ and a sigmoid.
+\item 594,496 parameters, below the 721,176 cap. Everything else (shapes, 9-step rollout without teacher forcing,
+training protocol) is identical to model A.
+\end{itemize}
+Its reach follows the same argument as Q2.3. One step has two spatial operations, the $3\times3$ convolutions of
+layers~1 and~2, each moving information one cell. The longest path ($u_\tau$ or $h^{(1)}_{\tau-1}$ through both
+convolutions) therefore crosses 2 cells, but a cell is now 8\,px wide. Reach $=2\times8=$ \textbf{16\,px} per
+axis ($16\sqrt2\approx22.6$\,px diagonally), \textbf{twice model A's 8\,px}, so strictly larger. At 3$\times$ the
+median displacement is about 10\,px/frame and the 90th percentile about 12.4\,px/frame, inside D's reach in every
+direction. Coarser folding is the price: each output cell must rebuild an $8\times8$ patch from 64 hidden channels.
+
+
+\textbf{Q2.13.}
+\begin{itemize}
+\item \emph{Mirror and rotation (Table~3): appearance.}
+  \begin{itemize}
+  \item Model B changes only the training appearance (no new speeds). It cuts $C_M$ from $1.86\times10^{-3}$ to
+  $1.16\times10^{-3}$ and $C_R$ from $3.12\times10^{-3}$ to $1.43\times10^{-3}$, and closes the rotation error gap
+  completely: $E_R=0.0223$ equals B's own $E^{(5)}$, against $+8\%$ for A.
+  \item Models C and D, trained without symmetry augmentation, keep $E_R$ above $E^{(5)}$ ($+3.5\%$, $+2.5\%$).
+  Their smaller $C_T$ comes with a much larger $E_T$: blurrier forecasts are more consistent for free (Q2.6).
+  \end{itemize}
+\item \emph{2$\times$: unfamiliar motion.} Model C has exactly A's architecture and reach, only trained on faster
+clips. It cuts $E^{(2)}$ at 2$\times$ from 0.0461 to 0.0294 ($-36\%$). B, which sees no new speeds, barely moves it
+(0.0439).
+\item \emph{3$\times$: mostly unfamiliar motion, with a smaller reach component.}
+  \begin{itemize}
+  \item C, with A's 8\,px reach, already cuts $E^{(2)}$ at 3$\times$ from 0.0540 to 0.0337 ($-38\%$).
+  \item D, with twice the reach, lowers it further to 0.0319.
+  \item The clearer reach signal is the slope: from 1$\times$ to 3$\times$, C's error rises by 42\% and D's by
+  only 16\%.
+  \end{itemize}
+\end{itemize}
+
+So model C does \emph{not} do badly at 3$\times$. Reach was not the binding limit for most of the motion, for two
+reasons. First, a digit is about 20\,px wide, so after a 10\,px jump its new position still overlaps its old one
+within 8\,px, and the network can link the two through that overlap. Second, diagonal motion stays inside the
+$8\sqrt2\approx11.3$\,px diagonal reach. Had C failed where D succeeded, it would have shown that the information
+simply cannot reach the right place in one update. More data could never fix that. Training changes the weights on
+the paths the convolutions provide, not the paths themselves: no setting of the weights can make an output cell
+depend on an input cell outside its receptive field. Data can only teach the network to use the reach it has.
+
+\textbf{Q2.14.} Yes, for the speed-augmented models.
+\begin{itemize}
+\item \emph{B.} No cost: its $E^{(5)}$ at 1$\times$ is 0.0223 against A's 0.0220, inside the seed spread.
+Seed~1 of B (0.0214) even beats both A seeds.
+\item \emph{C.} $+26\%$ (0.0278). It spends two-thirds of its windows on other speeds within the same 30 epochs,
+and its training loss is still well above A's at the end (Figure~S1).
+\item \emph{D.} $+35\%$ (0.0296). Two causes: the coarser $8\times8$ folding blurs detail (Figure~6(b) shows
+blocky forecasts), and the optimisation stalls. Every $8\times8$-folding run sits on a near-blank plateau
+(training loss $\approx0.040$) for 10--20 epochs before it starts learning (Figure~S1), so D is under-trained
+relative to A and C under the fixed budget.
+\end{itemize}
+Was it worth it? For a forecaster meant to model motion, yes. C and D lower $E^{(2)}$ by 36\% at 2$\times$ and by
+38--41\% at 3$\times$, and their worst-speed errors (0.0337 and 0.0319) are far below A's (0.0540). That is a
+gain of 0.017 at 2$\times$ and 0.020--0.022 at 3$\times$, against a 1$\times$ loss of 0.006--0.008. For a service that only ever sees 1$\times$ clips, it is
+not: symmetrised B is the most accurate model at 1$\times$.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{figS1_loss.pdf}
+\caption*{\textbf{Figure S1} (supplementary). Training loss per epoch for every learned model and seed (blue:
+$4\times4$ folding, A--C; orange: $8\times8$ folding, D and D+B; dashed: with symmetry augmentation). The
+$8\times8$-folding runs sit on a plateau near 0.040 (an almost constant forecast) before they start to learn; D+B
+seed~0 never leaves it within the 30 epochs.}
+\end{figure}
 
 \subsection{The Final Model}
-% Table 6, Figure 6, Q2.15--Q2.17.
+\textbf{Exact symmetry of $\bar f$.} Take any $T\in G$. Because $G$ is a group, $g'=gT$ runs over all of $G$
+when $g$ does, and $g^{-1}=T\,g'^{-1}$. Hence
+\[
+\bar f(TX)=\tfrac18\sum_{g\in G}g^{-1}f(gTX)=\tfrac18\sum_{g'\in G}T\,g'^{-1}f(g'X)=T\Big(\tfrac18\sum_{g'}g'^{-1}f(g'X)\Big)=T\bar f(X),
+\]
+using that $T$ is linear (a pixel permutation). This holds for every input and any $f$, so $C_M=C_R=0$ exactly.
+The measured values ($\sim10^{-17}$, Table~6) are float32 rounding from summing the same eight terms in a different
+order. Because MSE is unchanged when the same permutation is applied to both arguments, it also follows that
+$E_M=E_R=E^{(5)}$ for every symmetrised model.
+
+\textbf{Which final model.} We first chose D+B, before evaluating it, on the strength of Table~5: model~B shows that
+symmetry augmentation costs nothing at 1$\times$ and makes transformed inputs as accurate as the originals, which
+is exactly what the symmetrised forecaster averages over. The D+B seed~0 run, however, never left the $8\times8$
+plateau within the 30 epochs: its training loss was 0.0391 at the end (Figure~S1), and its forecasts are almost
+constant ($E^{(5)}=0.0390$ at every horizon and speed). The protocol fixes the seeds and the number of epochs, so
+it cannot be rerun. A final model with one failed seed out of two is not reliable, so \textbf{the final model is
+symmetrised D}. For reference, symmetrised D+B gives $E^{(5)}=0.0300$ for seed~1 and 0.0390 for seed~0.
+
+\input{generated/table6}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=0.55\textwidth]{fig6a_consistency.pdf}\\[2pt]
+\textbf{(a)}\\[4pt]
+\includegraphics[width=0.78\textwidth]{fig6a_speeds.pdf}\\
+\textbf{(b)}
+\caption{The final model (symmetrised D, seed 0). (a) Figure~3 repeated on the same videos and transformations;
+rows 3 and 4 now coincide. GIFs: \texttt{Question2/results/gifs/fig6a\_mirror\_257.gif},
+\texttt{fig6a\_mirror\_519.gif}, \texttt{fig6a\_rot\_279.gif}, \texttt{fig6a\_rot\_733.gif}. (b) Figure~5
+repeated on test video 29.}
+\label{fig:6}
+\end{figure}
+
+\textbf{Q2.15.}
+\begin{itemize}
+\item \emph{Consistency.} Learned symmetry (B) reduces the gaps but does not remove them:
+$C_M=1.16\times10^{-3}$ and $C_R=1.43\times10^{-3}$. Built-in symmetry gives $\sim10^{-17}$. Only the built-in
+version is exact, because the proof above holds for every input and every $f$. Augmentation only rewards
+consistency on the training distribution, on average, through the loss.
+\item \emph{Accuracy on original clips.} Symmetrised B is slightly better than B ($E^{(5)}$ 0.0218 against
+0.0223), and symmetrised D matches D (0.0294 against 0.0296).
+\item \emph{Accuracy on transformed clips.} The built-in models have $E_M=E_R=E^{(5)}$ by construction (0.0218
+for symmetrised B), against B's 0.0224 and 0.0223.
+\item \emph{Inference cost.} Eight forward passes plus transforms. Symmetrised B takes 2.71\,s for the 1,000 test
+videos against B's 0.243\,s (11$\times$); symmetrised D takes 0.549\,s against 0.081\,s (6.8$\times$).
+\end{itemize}
+
+\emph{When averaging hurts.} Squared error is convex, so the averaged forecast can never be worse than the
+\emph{average} of the eight back-transformed forecasts' errors. It hurts when some of those eight are much worse
+than the untransformed one, because averaging then blurs a sharp, good forecast with poor ones. This happens when
+the model has not learned the transformed inputs, or when the data are not truly symmetric (gravity, text,
+lighting from above). Here the data are symmetric and the eight forecasts are similar, so averaging acted like a
+small ensemble and did not hurt: $E^{(5)}$ fell by 2.6\% for B and by 0.8\% for D.
+
+\textbf{Q2.16.} Test video 257, mirrored (Figure~6(a), top panel).
+\begin{itemize}
+\item \emph{Fixed by symmetrisation.} Rows 3 and 4 are now identical ($C_M=8.19\times10^{-17}$). The final model no
+longer has one account of the motion for the upright video and another for the mirrored one: the 2 is not dropped
+on the mirrored input any more.
+\item \emph{Not fixed.} The forecast is still not right. Both digits become one blocky column of $8\times8$ cells,
+which leans and drifts up and to the right, roughly following the 2 as it climbs towards the 0. Neither digit
+stays recognisable, and they do not stay apart. Symmetrisation removed the inconsistency, and the speed
+augmentation and larger reach do not matter at 1$\times$. The coarser $8\times8$ folding made the shapes worse,
+not better.
+\end{itemize}
+
+\textbf{Q2.17 (final verdict).} Partly. The final model has learned where moving mass goes, but not what moves. It
+is exactly consistent under mirror and rotation, and its error barely depends on speed: $E^{(2)}$ rises by 15\% from
+1$\times$ to 3$\times$, against 190\% for model A. Figure~6(b) shows it sending both digits in the right directions
+at 3$\times$, where A stalled. What would convince a skeptic is success on motion it never saw: intermediate or
+higher speeds within its 16\,px reach (1.5$\times$, 4$\times$), and new shapes such as letters, with errors close
+to those at 1$\times$. One test it still fails: keeping two digits apart after they overlap (Figure~6(a)). Its
+forecasts merge them into one blocky blob, and its 1$\times$ accuracy (0.0294) is worse than model A's (0.0220).

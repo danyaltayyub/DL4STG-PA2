@@ -1,0 +1,28 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Test results for symmetrised models (rows: quantities; columns: models); lower is better, entries are mean (seed 0, seed 1). Training time is that of the underlying learned model.}
+\label{tab:6}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcc}
+\toprule
+Quantity & Sym.\ B & Sym.\ D \\
+\midrule
+$E^{(5)}$ $1\times$ & 0.0218 (0.0227, 0.0208) & 0.0294 (0.0305, 0.0283) \\
+\midrule
+$C_M$ & $8.63\times10^{-17}$ ($8.55\times10^{-17}$, $8.71\times10^{-17}$) & $6.17\times10^{-17}$ ($5.82\times10^{-17}$, $6.52\times10^{-17}$) \\
+$E_M$ & 0.0218 (0.0227, 0.0208) & 0.0294 (0.0305, 0.0283) \\
+$C_R$ & $6.97\times10^{-17}$ ($6.94\times10^{-17}$, $7.01\times10^{-17}$) & $4.78\times10^{-17}$ ($4.63\times10^{-17}$, $4.92\times10^{-17}$) \\
+$E_R$ & 0.0218 (0.0227, 0.0208) & 0.0294 (0.0305, 0.0283) \\
+\midrule
+$E^{(2)}$ $1\times$ & 0.0184 (0.0191, 0.0176) & 0.0275 (0.0285, 0.0265) \\
+$E^{(2)}$ $2\times$ & 0.0431 (0.0430, 0.0432) & 0.0292 (0.0302, 0.0283) \\
+$E^{(2)}$ $3\times$ & 0.0482 (0.0481, 0.0482) & 0.0317 (0.0329, 0.0305) \\
+\midrule
+Trainable parameters & 480{,}784 & 594{,}496 \\
+\midrule
+Training time per epoch (s) & 6.52 (6.53, 6.52) & 2.39 (2.38, 2.39) \\
+Inference time (s) & 2.71 (2.71, 2.71) & 0.549 (0.550, 0.549) \\
+\bottomrule
+\end{tabular}}
+\end{table}

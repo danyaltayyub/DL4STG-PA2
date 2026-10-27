@@ -1,0 +1,100 @@
+epoch 1/30 loss 0.046434 time 6.6s
+epoch 2/30 loss 0.039443 time 6.4s
+epoch 3/30 loss 0.038974 time 6.4s
+epoch 4/30 loss 0.038640 time 6.4s
+epoch 5/30 loss 0.038187 time 6.4s
+epoch 6/30 loss 0.037436 time 6.4s
+epoch 7/30 loss 0.036983 time 6.4s
+epoch 8/30 loss 0.036560 time 6.4s
+epoch 9/30 loss 0.036288 time 6.4s
+epoch 10/30 loss 0.035957 time 6.4s
+epoch 11/30 loss 0.035683 time 6.4s
+epoch 12/30 loss 0.035471 time 6.4s
+epoch 13/30 loss 0.035221 time 6.4s
+epoch 14/30 loss 0.034755 time 6.4s
+epoch 15/30 loss 0.034494 time 6.4s
+epoch 16/30 loss 0.034221 time 6.4s
+epoch 17/30 loss 0.033877 time 6.4s
+epoch 18/30 loss 0.033705 time 6.4s
+epoch 19/30 loss 0.033537 time 6.4s
+epoch 20/30 loss 0.033366 time 6.4s
+epoch 21/30 loss 0.033254 time 6.4s
+epoch 22/30 loss 0.033098 time 6.4s
+epoch 23/30 loss 0.033155 time 6.4s
+epoch 24/30 loss 0.033017 time 6.4s
+epoch 25/30 loss 0.032836 time 6.5s
+epoch 26/30 loss 0.032745 time 6.4s
+epoch 27/30 loss 0.032660 time 6.4s
+epoch 28/30 loss 0.032543 time 6.4s
+epoch 29/30 loss 0.032442 time 6.4s
+epoch 30/30 loss 0.032352 time 6.5s
+done: params 480784, 6.4 s/epoch
+D_s0 val {'MSE_1': 0.02667, 'MSE_2': 0.02877, 'MSE_3': 0.03003, 'MSE_4': 0.0312, 'MSE_5': 0.03237, 'E5': 0.02981, 'E2': 0.02772, 'params': 480800.0, 'E2_1x': 0.02772, 'E5_1x': 0.02981, 'E2_2x': 0.03104, 'E5_2x': 0.03385, 'E2_3x': 0.03369}
+epoch 1/30 loss 0.047426 time 10.2s
+epoch 2/30 loss 0.040215 time 10.0s
+epoch 3/30 loss 0.040195 time 10.0s
+epoch 4/30 loss 0.040193 time 10.0s
+epoch 5/30 loss 0.040201 time 10.0s
+epoch 6/30 loss 0.040204 time 10.0s
+epoch 7/30 loss 0.040200 time 10.0s
+epoch 8/30 loss 0.040198 time 10.0s
+epoch 9/30 loss 0.040196 time 10.0s
+epoch 10/30 loss 0.040192 time 10.0s
+epoch 11/30 loss 0.040200 time 10.0s
+epoch 12/30 loss 0.040208 time 10.0s
+epoch 13/30 loss 0.040186 time 10.0s
+epoch 14/30 loss 0.040187 time 10.0s
+epoch 15/30 loss 0.040181 time 10.0s
+epoch 16/30 loss 0.040198 time 10.0s
+epoch 17/30 loss 0.040184 time 10.0s
+epoch 18/30 loss 0.040190 time 10.0s
+epoch 19/30 loss 0.040201 time 10.0s
+epoch 20/30 loss 0.040200 time 10.0s
+epoch 21/30 loss 0.040193 time 10.0s
+epoch 22/30 loss 0.040198 time 10.0s
+epoch 23/30 loss 0.040201 time 10.0s
+epoch 24/30 loss 0.040196 time 10.0s
+epoch 25/30 loss 0.040189 time 10.0s
+epoch 26/30 loss 0.040182 time 10.0s
+epoch 27/30 loss 0.040186 time 10.0s
+epoch 28/30 loss 0.040198 time 10.0s
+epoch 29/30 loss 0.040164 time 10.0s
+epoch 30/30 loss 0.040185 time 10.0s
+done: params 709520, 10.0 s/epoch
+D_s0 val {'MSE_1': 0.03948, 'MSE_2': 0.03951, 'MSE_3': 0.03945, 'MSE_4': 0.03946, 'MSE_5': 0.03945, 'E5': 0.03947, 'E2': 0.03949, 'params': 709500.0, 'E2_1x': 0.03949, 'E5_1x': 0.03947, 'E2_2x': 0.03946, 'E5_2x': 0.03947, 'E2_3x': 0.03946}
+epoch 1/30 loss 0.049340 time 2.6s
+epoch 2/30 loss 0.040189 time 2.4s
+epoch 3/30 loss 0.040158 time 2.4s
+epoch 4/30 loss 0.040140 time 2.4s
+epoch 5/30 loss 0.040129 time 2.4s
+epoch 6/30 loss 0.040110 time 2.4s
+epoch 7/30 loss 0.040081 time 2.4s
+epoch 8/30 loss 0.040051 time 2.4s
+epoch 9/30 loss 0.040017 time 2.4s
+epoch 10/30 loss 0.039980 time 2.4s
+epoch 11/30 loss 0.039951 time 2.4s
+epoch 12/30 loss 0.039918 time 2.4s
+epoch 13/30 loss 0.039853 time 2.4s
+epoch 14/30 loss 0.039811 time 2.4s
+epoch 15/30 loss 0.039758 time 2.4s
+epoch 16/30 loss 0.039608 time 2.4s
+epoch 17/30 loss 0.039333 time 2.4s
+epoch 18/30 loss 0.039141 time 2.4s
+epoch 19/30 loss 0.038963 time 2.4s
+epoch 20/30 loss 0.038783 time 2.4s
+epoch 21/30 loss 0.038603 time 2.4s
+epoch 22/30 loss 0.038432 time 2.4s
+epoch 23/30 loss 0.038266 time 2.4s
+epoch 24/30 loss 0.038091 time 2.4s
+epoch 25/30 loss 0.036952 time 2.4s
+epoch 26/30 loss 0.035297 time 2.4s
+epoch 27/30 loss 0.033778 time 2.4s
+epoch 28/30 loss 0.032946 time 2.4s
+epoch 29/30 loss 0.032291 time 2.4s
+epoch 30/30 loss 0.031866 time 2.4s
+done: params 594496, 2.4 s/epoch
+D_s0 val {'MSE_1': 0.02735, 'MSE_2': 0.0291, 'MSE_3': 0.03046, 'MSE_4': 0.03184, 'MSE_5': 0.0331, 'E5': 0.03037, 'E2': 0.02823, 'params': 594500.0, 'E2_1x': 0.02823, 'E5_1x': 0.03037, 'E2_2x': 0.03006, 'E5_2x': 0.03346, 'E2_3x': 0.03242}
+dil  params 480,784  E2 1x/2x/3x 0.0277 0.0310 0.0337  mean 0.0308  E5_1x 0.0298
+k5   params 709,520  E2 1x/2x/3x 0.0395 0.0395 0.0395  mean 0.0395  E5_1x 0.0395
+p8   params 594,496  E2 1x/2x/3x 0.0282 0.0301 0.0324  mean 0.0302  E5_1x 0.0304
+winner: p8 {"patch": 8, "hidden": 64, "kernels": [3, 3], "dilations": [1, 1]}
