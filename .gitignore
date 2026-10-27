@@ -1,0 +1,21 @@
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+
+# Moving MNIST download (torchvision fetches it again on first run)
+Question2/data/
+
+# Smoke-test runs (code checks, not results)
+Question2/results/smoke/
+Question2/checkpoints/smoke/
+
+# LaTeX build artefacts
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.fls
+report/*.fdb_latexmk
+report/*.synctex.gz

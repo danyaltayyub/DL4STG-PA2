@@ -1,0 +1,125 @@
+\section{Question 2 --- Motion or Memory?}
+
+Tables and figures are numbered as in the handout. Code is in \texttt{Question2/} (\texttt{SPEC.md} restates
+the protocol; \texttt{checks.py}, \texttt{train.py}, \texttt{evaluate.py}). Every learned-model entry is
+\emph{mean (seed 0, seed 1)}. Errors are given to three significant figures, with scientific notation below
+$10^{-3}$. Unless stated otherwise, results are on the 1,000 test videos at 1$\times$ with $t=1$.
+Hardware: NVIDIA GeForce RTX~4060 Laptop GPU (8\,GB), PyTorch~2.9.0 (CUDA~12.8), float32.
+
+\subsection{Setup}
+
+\input{generated/table1}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig1_flow.pdf}
+\caption{Optical flow on the first 50 training videos (950 consecutive-frame pairs, Farneback).
+Pixels kept: \FLOWNKEPT{} (above 0.2 intensity in both frames and flow magnitude above 0.5\,px).
+(a) Flow direction, $\theta=\operatorname{atan2}(-d_y,d_x)$, as a fraction of kept pixels; the dashed line is
+the uniform level $1/18$. (b) Flow speed; median \FLOWMEDIAN{}\,px/frame (dashed). Bars beyond 5\,px/frame
+(0.46\% of kept pixels) are not drawn.}
+\label{fig:1}
+\end{figure}
+
+\textbf{Q2.1.} \emph{Mirrored and rotated motion is already familiar.}
+\begin{itemize}
+\item Figure~1(a) has training motion in every direction and no empty sector. The bins vary between 0.026 and
+0.082 around the uniform 0.056. That variation is what about 100 digit trajectories in 50 videos produce, not a
+preferred direction.
+\item Mirroring maps $\theta\mapsto180^\circ-\theta$, and a $90^\circ$ rotation maps
+$\theta\mapsto\theta+90^\circ$. Applied to every training video, either would give a histogram that differs from
+Figure~1(a) only by this sampling noise. So a model trained on these data has already seen mirrored and rotated
+\emph{trajectories}, while mirrored and rotated \emph{digits} remain unfamiliar.
+\end{itemize}
+
+\emph{Faster motion is not.}
+\begin{itemize}
+\item Speeds are concentrated: median \FLOWMEDIAN{}\,px/frame, interquartile range 3.0--3.9, 90th percentile
+4.1 (Figure~1(b)).
+\item 2$\times$ and 3$\times$ correspond to about 6.6 and 10.0\,px/frame. Both lie outside what the training
+data contain.
+\end{itemize}
+
+\emph{Overlap bias.} Where digits overlap, Farneback's single smooth flow field averages two motions. This
+produces short or wrongly directed vectors, which feed the low-speed tail below 2\,px/frame or are dropped by the
+0.5\,px threshold. Two $28\times28$ digits in a $64\times64$ frame overlap in only a minority of frames. The bias
+can therefore blur the speed histogram's lower tail and add noise to direction bins, but it cannot fill or empty
+a whole direction sector, nor move the 3--4\,px/frame peak. Neither conclusion changes.
+
+\textbf{Q2.2.} Each transformation keeps the videos physically valid, because constant velocity with elastic
+bounces in a square box is preserved:
+\begin{itemize}
+\item \textbf{Mirror} leaves the motion statistics essentially unchanged (Q2.1) and changes appearance: a
+mirrored digit is not a digit.
+\item \textbf{Rotation} likewise leaves the motion unchanged and changes appearance more: strokes swap orientation.
+\item \textbf{Speed-up} leaves appearance unchanged (the same frames, subsampled) and changes only the motion,
+pushing it outside the training range.
+\end{itemize}
+Each test therefore moves one factor while holding the other fixed. A failure under mirror or rotation points to
+appearance; a failure under speed-up points to motion. Mirror and rotation give two doses of appearance change.
+A model that has learned the motion rule itself should pass all three.
+
+\subsection{Baseline: ConvLSTM}
+
+\input{generated/table2}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.56\textwidth]{fig2_examples.pdf}
+\caption{Model A (seed 0) on three test videos at 1$\times$, $t=1$. In each block: the input frames 1--5, the
+prediction and the ground truth for frames 6--10. Test video 0 (dataset index 9000) has overlapping digits;
+videos 6 and 7 (9006, 9007) do not.}
+\label{fig:2}
+\end{figure}
+
+\textbf{Q2.3.} Model A's reach is \textbf{8 pixels per time step} (2 cells of the folded grid).
+\begin{itemize}
+\item \emph{Folding.} \texttt{pixel\_unshuffle(4)} regroups each $4\times4$ patch into 16 channels, so one cell
+of the $16\times16$ grid is 4\,px. It moves no information, and neither do the $1\times1$ head and
+\texttt{pixel\_shuffle}.
+\item \emph{One step $\tau$ has exactly two spatial operations:} layer~1's $3\times3$ convolution on
+$[u_\tau,h^{(1)}_{\tau-1}]$ and layer~2's $3\times3$ convolution on $[h^{(1)}_\tau,h^{(2)}_{\tau-1}]$. Each moves
+information at most one cell. The gates and the cell-state update (Eq.~4) are element-wise, so $c$ moves nothing.
+\item \emph{Paths to $\hat x_{\tau+1}$.}
+  \begin{itemize}
+  \item From the new input: $u_\tau\to$ conv\textsubscript{1} $\to$ conv\textsubscript{2}, 2 cells.
+  \item From layer~1's state: $h^{(1)}_{\tau-1}\to$ conv\textsubscript{1} $\to$ conv\textsubscript{2}, 2 cells.
+  \item From layer~2's state: $h^{(2)}_{\tau-1}\to$ conv\textsubscript{2}, 1 cell.
+  \item From layer~1's cell state: $c^{(1)}_{\tau-1}\to h^{(1)}_\tau\to$ conv\textsubscript{2}, 1 cell.
+  \end{itemize}
+  The longest is 2 cells, i.e.\ $2\times4=8$\,px along each axis. Because $3\times3$ kernels include diagonal
+  neighbours, it is up to $8\sqrt2\approx11.3$\,px diagonally.
+\item \emph{Recurrence.} The recurrence does not extend this. Information can travel further over several steps,
+but tracking needs the digit's new position in $u_\tau$ to meet its old position, held in $h_{\tau-1}$, within
+one update. During the rollout the fed-back prediction plays the role of $u_\tau$, so the same limit applies.
+\end{itemize}
+
+\textbf{Q2.4.}
+\begin{itemize}
+\item \emph{Against the references.} Model A's $E^{(5)}=0.0220$ is about half of Blank's (0.0426) and a third
+of Copy-last's (0.0641), and the two seeds agree closely (0.0224, 0.0216). Copy-last is worse than Blank because
+a stationary copy is wrong twice: it leaves ink where the digits were and none where they are now.
+\item \emph{Growth over the horizons.} Model A's error rises from $\mathrm{MSE}_1=0.0168$ to
+$\mathrm{MSE}_5=0.0259$ ($+54\%$). The first step costs most ($+21\%$); after that it grows by 6--7\% per horizon,
+while Blank's error stays flat. Figure~2 shows where the error comes from: positions stay roughly right, but every
+step loses detail, and by $h=5$ the digits are blobs. Blurring is what a squared-error forecaster does under
+uncertainty, because it averages over plausible futures instead of committing to one sharp, possibly wrong, frame.
+\item \emph{Overlap.} In test video~0 the 5 and the 8 overlap in the inputs, and model A predicts one merged
+smear that drifts with their average motion. When the true digits separate (the 5 up and right, the 8 down and
+left), the prediction does not split. It stretches along the line between them. Test video~7 shows the same
+merging as the 6 and the 9 approach each other. The ConvLSTM keeps no separate object identities: two digits on
+the same cells share the same state, so once they overlap their shapes and velocities mix and cannot be recovered.
+\end{itemize}
+
+\textbf{Q2.5} (recorded before any Testing-the-Baseline experiment; reproduced unchanged from
+\texttt{report/prerun\_predictions.md}).
+% Inserted verbatim after the student's approval and commit.
+
+\subsection{Testing the Baseline}
+% Tables 3--4, Figures 3--5, Q2.6--Q2.10.
+
+\subsection{What Can Data Fix?}
+% Q2.11 (pre-registered), Table 5, Q2.12--Q2.14.
+
+\subsection{The Final Model}
+% Table 6, Figure 6, Q2.15--Q2.17.

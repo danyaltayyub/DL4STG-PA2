@@ -1,0 +1,9 @@
+# Tested with Python 3.12.3 on an RTX 4060 Laptop GPU (CUDA 12.8 wheels).
+# CUDA build: pip install torch==2.9.0 torchvision==0.24.0 --index-url https://download.pytorch.org/whl/cu128
+torch==2.9.0
+torchvision==0.24.0
+numpy>=2,<3
+opencv-python-headless>=4.10
+matplotlib>=3.9
+imageio>=2.30
+pillow>=10

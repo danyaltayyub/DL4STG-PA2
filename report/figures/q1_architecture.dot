@@ -1,0 +1,43 @@
+// Question 1 architecture diagram. Render: dot -Tpdf q1_architecture.dot -o q1_architecture.pdf
+digraph Q1 {
+  rankdir=TB; newrank=true; nodesep=0.18; ranksep=0.28;
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#52514e", fontname="Helvetica", fontsize=11, margin="0.08,0.04"];
+  edge [color="#52514e", fontname="Helvetica", fontsize=9, fontcolor="#52514e", arrowsize=0.6];
+
+  gauges [label="Levels S1–S4, T1\n10-min readings", fillcolor="#e8f1fc"];
+  rain   [label="Rain R1, R2\ntimestamped", fillcolor="#e8f1fc"];
+  rel    [label="Reservoir releases\nrecorded + announced", fillcolor="#e8f1fc"];
+  stat   [label="River graph\ndistances d_e", fillcolor="#e8f1fc"];
+  {rank=same; gauges; rain; rel; stat;}
+
+  align [label="As-of alignment & QC at issuance t₀\n10-min grid t₀−143Δ … t₀; only records received by t₀\nforward-fill + mask + age;  schedule as known at t₀ → t₀+6Δ", fillcolor="#f5f4f0"];
+  gauges -> align; rain -> align; rel -> align; stat -> align [style=dashed];
+
+  xg [label="X_g\nB × 144 × 5 × 3", shape=note];
+  xr [label="X_r\nB × 144 × 2 × 3", shape=note];
+  xq [label="X_q\nB × 150 × 4", shape=note];
+  gr [label="G: 8 nodes + U\n|E| = 9", shape=note];
+  {rank=same; xg; xr; xq; gr;}
+  align -> xg; align -> xr; align -> xq; align -> gr;
+
+  enc [label="Pad to T = 150 (future masked)\nlinear 3|4 → 64 + node embedding\nstack nodes → B × 8 × 150 × 64\ncausal dilated TCN (field 256)\nH: B × 8 × 150 × 64", fillcolor="#e8f1fc"];
+  tt  [label="Travel time\nτ_e = d_e / c_e(stage)\nc_e ∈ [c_min, c_max], rises\nwith stage;  τ: B × 5", fillcolor="#fdf0e9"];
+  uh  [label="Rainfall–runoff\nunit hydrographs ρ ≥ 0\nover 12 h (R2 → U → S3)\nq: B × 4 × 6 × 2", fillcolor="#fdf0e9"];
+  {rank=same; tt; uh;}
+  xg -> enc; xr -> enc; xq -> enc; xg -> tt; gr -> tt; xr -> uh; gr -> uh [style=dashed];
+
+  route [label="Delay routing, upstream paths j → i\nlag kernel centred at τ_{j→i} − h\nm: B × 4 × 6 × 5 × 64", fillcolor="#fdf0e9"];
+  base  [label="Persistence anchor\ny_last: B × 1 × 4 × 1", fillcolor="#fdf0e9"];
+  enc -> route; tt -> route; xg -> base [style=dashed];
+
+  dec [label="Decoder per station i, lead h\nattention over upstream messages\n+ H_i(t₀), rain q, scheduled release change\nZ: B × 4 × 6 × 128", fillcolor="#e8f1fc"];
+  route -> dec; uh -> dec; enc -> dec [label=" H_i(t₀)"];
+
+  head [label="Non-crossing quantile head\nδ̂: B × 4 × 6 × 3 → permute → B × 6 × 4 × 3", fillcolor="#e8f1fc"];
+  dec -> head;
+  {rank=same; head; base;}
+
+  out [label="Ŷ = y_last + s_i δ̂     B × 6 × 4 × 3\n(lead 10…60 min, station S1–S4, quantile 0.05 / 0.5 / 0.95)\nservice product: lead 6 = t₀ + 60 min", fillcolor="#e9f6ef", color="#0b0b0b"];
+  head -> out; base -> out [label=" +"];
+
+}

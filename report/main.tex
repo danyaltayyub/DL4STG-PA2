@@ -1,0 +1,72 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=2.1cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+
+\setlist{itemsep=1pt,topsep=2pt,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\graphicspath{{figures/}{../Question2/results/figures/}}
+\newcommand{\figref}[1]{Figure~\ref{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+{\large Lahore University of Management Sciences}\\[2pt]
+School of Science and Engineering, Department of Artificial Intelligence\\[14pt]
+{\Large \textbf{AI651 -- Deep Learning for Space, Time and Graphs}}\\[6pt]
+{\large Fall 2026 \quad\textbullet\quad Assignment 2}\\[40pt]
+{\Large \textbf{Report}}\\[30pt]
+\begin{tabular}{rl}
+Student: & Danyal Tayyub \\
+Roll number: & 24280023 \\
+Code repository: & \url{https://github.com/danyaltayyub/DL4STG-PA2} \\
+\end{tabular}
+\vfill
+\begin{minipage}{0.86\textwidth}
+\small
+\textbf{Contents.} Question~1 proposes a river-level forecasting system under the six required headings.
+Question~2 trains a ConvLSTM forecaster on Moving MNIST, tests it under mirroring, rotation and speed-up,
+separates appearance, unfamiliar-motion and reach failures with models B--D, and builds a symmetrised final
+model. Code, GIFs and the pre-run predictions are in the repository (\texttt{Question2/}, \texttt{report/}).
+The appendix lists the use of generative AI.
+\end{minipage}
+\vspace{20pt}
+\end{titlepage}
+
+\renewcommand{\thefigure}{Q1.\arabic{figure}}
+\input{sections/q1}
+\clearpage
+% Question 2 numbers its tables and figures as in the handout (Table 1, Figure 1, ...).
+\setcounter{figure}{0}\setcounter{table}{0}
+\renewcommand{\thefigure}{\arabic{figure}}
+\input{generated/flowstats}
+\input{sections/q2}
+\clearpage
+\appendix
+\input{sections/ai_usage}
+
+\section*{References}
+\small
+\begin{itemize}[leftmargin=*]
+\item X.~Shi, Z.~Chen, H.~Wang, D.-Y.~Yeung, W.-K.~Wong, W.~Woo. Convolutional LSTM Network: A Machine
+Learning Approach for Precipitation Nowcasting. \textit{NeurIPS}, 2015.
+\item N.~Srivastava, E.~Mansimov, R.~Salakhutdinov. Unsupervised Learning of Video Representations using
+LSTMs. \textit{ICML}, 2015.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,13 @@
+// River graph used for routing (inset of Figure 1). Render: dot -Tpdf q1_river_graph.dot -o q1_river_graph.pdf
+digraph river {
+  rankdir=LR; nodesep=0.15; ranksep=0.45;
+  node [shape=circle, fixedsize=true, width=0.45, style=filled, fillcolor="#ffffff", color="#52514e", fontname="Helvetica", fontsize=11];
+  edge [color="#52514e", arrowsize=0.6, fontname="Helvetica", fontsize=9, fontcolor="#52514e"];
+  Q [label="Res"]; S1; S2; S3; S4; T1;
+  R1 [shape=diamond, width=0.5, fillcolor="#f5f4f0"]; R2 [shape=diamond, width=0.5, fillcolor="#f5f4f0"];
+  U [label="U", style="dashed,filled"];
+  Q -> S1 [label="d₁"]; S1 -> S2 [label="d₂"]; S2 -> S3 [label="d₃"]; S3 -> S4 [label="d₄"];
+  T1 -> S2 [label="d_T"]; U -> S3 [style=dashed];
+  R1 -> S1 [style=dotted]; R1 -> S2 [style=dotted]; R2 -> U [style=dotted];
+  {rank=same; T1; S1;} {rank=same; U; S2;} {rank=same; R1; Q;}
+}

@@ -1,0 +1,15 @@
+# Generative-AI usage log (source for the report appendix)
+
+Tool: Claude (Anthropic), used through Claude Code. The main session ran Claude Opus; delegated sub-tasks ran on Claude Sonnet and Claude Haiku.
+
+The prompts below are paraphrased in formal language. Each one keeps the substance of the actual request.
+The "Edits" column records what the student changed, rejected, or decided independently.
+
+| # | Stage | Prompt (paraphrased) | Output | Edits / decisions by student |
+|---|---|---|---|---|
+| 1 | Planning | Read the assignment handout and its front-page instructions. Without writing code or installing anything, assess whether both questions can be completed, and propose an approach that keeps accuracy while limiting cost, delegating sub-tasks to lower-cost models. | A feasibility analysis for Question 1 (written design) and Question 2 (experiment pipeline checked against the handout's built-in checks). A diagnosis of why the local GPU driver failed to load. A staged plan with a model allocation per sub-task, and a list of decisions for the student. | Reported the deadline extension to Oct 29. Fixed the GPU driver personally by enrolling the Secure Boot key. Chose to manage all GitHub commits and pushes personally. Asked for the Q2.5 and Q2.11 predictions to be drafted by the tool and reviewed by the student before they are recorded. |
+| 2 | Environment | Set up the environment before any experiment, following the approach used in Assignment 1. | A Python 3.12 virtual environment reusing the existing CUDA build of PyTorch 2.9.0, with the matching torchvision 0.24.0, OpenCV, matplotlib and imageio. The Moving MNIST download. A repository skeleton (report folder, this log, the pre-run predictions file). | None. |
+| 3 | Question 2, specification and code | Restate the Question 2 protocol as an implementation specification. Implement the video split, transformations, windows, model A, the training protocol, the metrics and the symmetrised wrapper, and verify them against the handout's checks. | `Question2/SPEC.md` and the code in `Question2/src` with `checks.py`, `train.py` and `evaluate.py`. All Table 1 checks pass and model A has 480,784 parameters. The consistency gap is exactly 0 for Blank and Copy-last and about 1e-16 for the symmetrised model. | _Pending student review._ |
+| 4 | Question 1 | Draft the Question 1 proposal under the six required headings, with an architecture diagram labelled with tensor dimensions. | A draft of Section 1 (`report/sections/q1.tex`) and the diagrams (`report/figures/q1_*.dot`). | _Pending student review._ |
+| 5 | Question 2, Figure 1 and model A | Produce Figure 1, train model A for seeds 0 and 1, and compute Table 2 and Figure 2. | `flow_stats.py`, `make_tables.py`, `make_figures.py`, Figure 1, Figure 2, the model A checkpoints, Table 2, and draft answers to Q2.1–Q2.4. | _Pending student review._ |
+| 6 | Question 2, Q2.5 | Draft the Q2.5 pre-run predictions from Figure 1 and the reach estimate, before any experiment in Testing the Baseline. | Draft predictions in `report/prerun_predictions.md`. | _Pending student review._ |
