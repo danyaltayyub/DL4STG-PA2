@@ -113,10 +113,134 @@ the same cells share the same state, so once they overlap their shapes and veloc
 
 \textbf{Q2.5} (recorded before any Testing-the-Baseline experiment; reproduced unchanged from
 \texttt{report/prerun\_predictions.md}).
-% Inserted verbatim after the student's approval and commit.
+Approved by the student and committed at 2026-10-27 15:23 PKT (commit \texttt{33d4a9f}), before any of the
+experiments below.
+
+\begin{quote}\small
+\textbf{Mirror test: should pass, approximately.}
+Figure 1(a) shows training motion in every direction with no empty sector, so a mirrored trajectory
+($\theta\to180^\circ-\theta$) is familiar motion. Only the digits look unfamiliar.
+Model A is convolutional and mostly has to carry local strokes along, so mirrored digits should cost little.
+Expected: $E_M$ within about 10\% of $E^{(5)}$, and $C_M$ well below $E_M$.
+
+\textbf{Rotation test: should also pass, but less cleanly than mirror.}
+A $90^\circ$ rotation ($\theta\to\theta+90^\circ$) again gives familiar motion. But it turns vertical strokes into
+horizontal ones, and the learned $3\times3$ filters are not rotation-equivariant, so the appearance shift is larger.
+Expected: $E_R>E_M$ and $C_R>C_M$, with $E_R$ up to about 20--30\% above $E^{(5)}$. Degraded, not broken.
+
+\textbf{Speed-up: should break down at 3$\times$.}
+Model A's reach is 8\,px per time step along each axis (Q2.3; up to $8\sqrt2\approx11.3$\,px diagonally). The
+median training speed is 3.3\,px/frame (Figure 1(b)), so 2$\times\approx$ 6.6\,px/frame and 3$\times\approx$
+10\,px/frame.
+At 2$\times$, motion stays within reach but is faster than anything in training (90th percentile 4.1\,px/frame).
+Predictions should degrade, with digits lagging behind their true positions, but stay roughly on track.
+At 3$\times$, the displacement exceeds the reach for most directions (any motion within about $37^\circ$ of an
+axis). The network cannot link a digit's old position to its new one in one update. Digits should lag, smear or
+fade, and $E^{(2)}$ should come close to, or exceed, Copy-last's.
+\end{quote}
 
 \subsection{Testing the Baseline}
-% Tables 3--4, Figures 3--5, Q2.6--Q2.10.
+
+\textbf{Mirror and rotation.}
+
+\input{generated/table3}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.84\textwidth]{fig3_consistency.pdf}
+\caption{The two test videos with the largest per-video $C_M$ (top two panels, $T$ = mirror) and $C_R$ (bottom
+two, $T$ = $90^\circ$ rotation) for seed-0 model A. Columns 1--5 are the inputs, columns 6--10 the five forecast
+horizons. Rows: (1) $X\mid f(X)$, (2) $T(X)\mid T(Y)$, (3) $T(X)\mid f(T(X))$, (4) $T(X)\mid T(f(X))$. Rows 3
+and 4 should agree for a consistent model. GIFs stepping through the horizons with the same four rows:
+\texttt{Question2/results/gifs/fig3\_mirror\_257.gif}, \texttt{fig3\_mirror\_519.gif},
+\texttt{fig3\_rot\_279.gif}, \texttt{fig3\_rot\_733.gif}.}
+\label{fig:3}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig4_hist.pdf}
+\caption{Per-video consistency gaps of seed-0 model A over the 1,000 test videos (log-spaced bins). Dotted line:
+the median. Dashed lines: the Figure~3 videos.}
+\label{fig:4}
+\end{figure}
+
+\textbf{Q2.6.} Blank and Copy-last commute with every pixel rearrangement. The zero frame stays zero, and copying
+the last frame and then transforming gives the same result as transforming and then copying. So $C_M=C_R=0$
+exactly, yet their transformed errors (0.0426 and 0.0641) are two to three times model A's. A forecaster that
+ignores the motion altogether is perfectly consistent: $C_T$ only says whether the model treats a transformed
+scene the \emph{same way}, not whether it treats it \emph{correctly}. $E_T$ measures the second, so a small $C_T$
+is only good news next to a small $E_T$. Model A has both: $C_M=1.86\times10^{-3}$ is about 8\% of $E_M=0.0226$.
+
+\textbf{Q2.7.} Test video 257 under mirroring ($C_M=6.22\times10^{-3}$, the largest).
+\begin{itemize}
+\item \emph{The truth} (row 2): the 0 stays near the top right, while the mirrored 2 climbs up and to the right
+towards it.
+\item \emph{Row 4} (the upright forecast, mirrored afterwards) keeps that account. The 2 moves up towards the 0,
+and by frame 10 the two have merged into one leaning, forked streak near the true position.
+\item \emph{Row 3} (the forecast from the mirrored input) loses the 2. It fades after frame 7, and the 0 melts into
+a single vertical bar below and to the left of where the digits actually go.
+\end{itemize}
+Shown the same motion with mirrored digits, the model no longer moves the 2 at all: one digit gets lost, and the
+other blurs into an unrecognisable stroke that drifts the wrong way. All four Figure~3 videos have digits that
+overlap or close in on each other, where the shapes are needed to tell the two digits apart.
+
+\textbf{Q2.8.} Yes, rotation is harder:
+\begin{itemize}
+\item $C_R=3.12\times10^{-3}$ is 1.7 times $C_M=1.86\times10^{-3}$.
+\item $E_R$ is 8\% above $E^{(5)}$, against 3\% for $E_M$.
+\item Both seeds agree, and Figure~4 shows that the whole $C_R$ distribution is shifted to the right, not just its
+tail.
+\end{itemize}
+The motion cannot explain the difference. By Q2.1 both transformations give equally familiar motion, because the
+training directions cover the circle evenly and speeds are unchanged. By Q2.2, what separates them is how much they
+change the digits' appearance. A mirror keeps vertical strokes vertical and horizontal strokes horizontal; a
+$90^\circ$ rotation swaps them, so rotated digits are further from anything the filters were trained on. The gap
+therefore comes from appearance. It is largest where two digits overlap and the model has to rely on their shapes
+to keep them apart.
+
+\textbf{Faster motion.}
+
+\input{generated/table4}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig5_speeds.pdf}
+\caption{Seed-0 model A on test video 29 at $1\times$, $2\times$ and $3\times$ ($t=1$): the five input frames,
+then the first two predicted and true future frames. The digits do not overlap in any displayed true frame.}
+\label{fig:5}
+\end{figure}
+
+\textbf{Q2.9.} Model A's predictions fall apart at \textbf{2$\times$}:
+\begin{itemize}
+\item $E^{(2)}$ rises from 0.0186 at 1$\times$ to 0.0461 at 2$\times$ (2.5 times), already worse than predicting
+an empty frame (Blank: 0.0426).
+\item At 3$\times$ it reaches 0.0540. It stays below Copy-last (0.0661 and 0.0703) only because a blurred guess
+costs less than a sharp digit in the wrong place.
+\end{itemize}
+This only partly agrees with the reach estimate. The 3$\times$ failure fits, because about 10\,px/frame exceeds
+the 8\,px reach for most directions. The 2$\times$ failure does not, because about 6.6\,px/frame is within reach.
+The estimate missed that reach is necessary but not sufficient. It counts the longest path that \emph{could} carry
+information, but the network only learned to use the displacements it was trained on (3--4\,px/frame), and the
+contribution from the edge of the $5\times5$-cell window is weak.
+
+Figure~5 shows what happens instead: \emph{stalling}. At 2$\times$, the predicted 2 and 8 stay near their positions
+in the last input frame (9), while the true 2 moves on and the true 8 bounces upwards. At 3$\times$, both digits
+sit where they were in frame 13 and fade into blobs. There are no duplicated or wrongly moving digits. The model
+cannot link the new positions to the old ones, so it keeps the mass where it last saw it and blurs it to hedge.
+This is the behaviour of a model that has not found the motion, rather than one that applies the wrong motion.
+
+\textbf{Q2.10.} No. For model A the two explanations coincide: both 2$\times$ and 3$\times$ are faster than
+anything in training, and 3$\times$ is also beyond reach. The 2$\times$ failure shows that unfamiliar motion
+\emph{alone} can break the model, which makes it impossible to decide from these runs whether reach also matters
+at 3$\times$. The separating experiment keeps the architecture and changes only the data:
+\begin{itemize}
+\item Train the same network with speed augmentation ($k\sim U\{1,2,3\}$), i.e.\ model C.
+\item If C fixes 2$\times$ but still fails at 3$\times$, the 3$\times$ failure is architectural reach.
+\item If C also fixes 3$\times$, the failure was unfamiliar motion.
+\item The complementary control is a model with larger reach trained on the same speed-augmented data (model D):
+it should succeed at 3$\times$ exactly where C fails, if reach is the limit.
+\end{itemize}
 
 \subsection{What Can Data Fix?}
 % Q2.11 (pre-registered), Table 5, Q2.12--Q2.14.

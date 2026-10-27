@@ -20,7 +20,7 @@ ap.add_argument("--unlock-baseline", action="store_true",
 a = ap.parse_args()
 parts = a.parts.split(",")
 assert set(parts) <= {"basic", "consistency", "speed", "timing"}
-sub = "smoke/" if a.tag else ""
+sub = f"{a.tag}/" if a.tag else ""   # e.g. smoke/, screen_k5/
 learned = a.predictor not in ("blank", "copylast")
 if a.predictor == "A" and not a.tag and not a.unlock_baseline:
     raise SystemExit("pre-registration: refusing non-smoke model A without --unlock-baseline")

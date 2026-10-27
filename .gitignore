@@ -10,6 +10,7 @@ Question2/data/
 # Smoke-test runs (code checks, not results)
 Question2/results/smoke/
 Question2/checkpoints/smoke/
+Question2/checkpoints/screen_*/
 
 # LaTeX build artefacts
 report/*.aux

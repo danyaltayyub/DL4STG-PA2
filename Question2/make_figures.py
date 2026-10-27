@@ -38,15 +38,19 @@ class Paths:
 
 
 # ------------------------------------------------------------------ helpers
-def has_overlap(frame, thr=0.3, min_area=15):
+def has_overlap(frame, thr=0.3, min_area=15, margin=0):
     """True if a frame has overlapping digits.
 
     The frame (2-D float array in [0, 1]) is thresholded at intensity > thr and
     the 8-connected components are counted with cv2.connectedComponentsWithStats.
     If fewer than 2 components have area >= min_area pixels, the two digits are
     touching/merged (or one is missing), and the frame counts as overlapping.
+    With margin > 0 the mask is dilated first, so digits closer than about
+    2*margin pixels also count as overlapping.
     """
     img = (np.asarray(frame) > thr).astype(np.uint8)
+    if margin:
+        img = cv2.dilate(img, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * margin + 1,) * 2))
     _, _, stats, _ = cv2.connectedComponentsWithStats(img, connectivity=8)
     return int((stats[1:, cv2.CC_STAT_AREA] >= min_area).sum()) < 2
 
@@ -229,10 +233,12 @@ def fig4(a):
         ax.set_ylabel("number of videos")
         ymax = ax.get_ylim()[1]
         ax.set_ylim(0, ymax * 1.18)
-        for n, e in enumerate(sel[T]):
+        for e in sel[T]:
             ax.axvline(e["C"], color=ps.REF, lw=1.2, ls="--")
-            ax.text(e["C"], ymax * 1.16, f"video {e['index']}", rotation=90, ha="right" if n == 0 else "left",
-                    va="top", fontsize=7, color=ps.REF)
+        # one horizontal label for both marked videos (their lines sit close together)
+        cmin = min(e["C"] for e in sel[T])
+        ax.text(cmin / 1.08, ymax * 0.6, "Figure 3 videos\n" + ", ".join(str(e["index"]) for e in sel[T]),
+                ha="right", va="center", fontsize=7, color=ps.REF)
         med = float(np.median(v))
         ax.axvline(med, color=ps.REF, lw=1.2, ls=(0, (1, 2)))
         ax.text(med, ymax * 1.16, "median", rotation=90, ha="right", va="top", fontsize=7, color=ps.REF)
@@ -248,7 +254,8 @@ SHOWN = {1: (6, 7), 2: (11, 13), 3: (16, 19)}
 def choose_fig5_video(videos):
     fr = videos[:, :, 0].float().div(255).cpu().numpy()
     for i in range(len(fr)):
-        if not any(has_overlap(fr[i, f - 1]) for k in SHOWN for f in SHOWN[k]):
+        # faint stroke edges included (thr 0.1) and a 2-px margin, so the digits are clearly apart
+        if not any(has_overlap(fr[i, f - 1], thr=0.1, margin=2) for k in SHOWN for f in SHOWN[k]):
             return i
     raise RuntimeError("no qualifying video")
 

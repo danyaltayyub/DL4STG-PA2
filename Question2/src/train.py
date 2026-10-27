@@ -80,7 +80,7 @@ def train(name, seed, epochs=30, tag=None, arch=None, root="data", bs=32):
         times.append(time.perf_counter() - t0)
         losses.append(tot.item() / n)
         print(f"epoch {ep + 1}/{epochs} loss {losses[-1]:.6f} time {times[-1]:.1f}s", flush=True)
-    sub = "smoke/" if tag else ""
+    sub = f"{tag}/" if tag else ""   # e.g. smoke/, screen_k5/
     os.makedirs(f"checkpoints/{sub}", exist_ok=True)
     os.makedirs(f"results/{sub}runs", exist_ok=True)
     arch_d = model.arch.to_dict()
