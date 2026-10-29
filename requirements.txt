@@ -7,3 +7,6 @@ opencv-python-headless>=4.10
 matplotlib>=3.9
 imageio>=2.30
 pillow>=10
+# Notebook (Question2/Question2.ipynb)
+jupyter
+pandas>=2

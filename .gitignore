@@ -12,6 +12,10 @@ Question2/results/smoke/
 Question2/checkpoints/smoke/
 Question2/checkpoints/screen_*/
 
+# Training demo run by Question2/Question2.ipynb
+Question2/checkpoints/notebook/
+Question2/results/notebook/
+
 # LaTeX build artefacts
 report/*.aux
 report/*.log

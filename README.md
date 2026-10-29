@@ -7,6 +7,8 @@ AI651 — Deep Learning for Space, Time and Graphs, LUMS, Fall 2026. Assignment 
 | `DL4STG_PA2.pdf` | The handout |
 | `Question1/` | The supplied companion notebook (optional, ungraded; not used) |
 | `Question2/` | ConvLSTM on Moving MNIST: code, checkpoints, results, figures and GIFs |
+| `Question2/Question2.ipynb` | Executed notebook: Table 1 checks, a training run of model A, re-evaluation of every checkpoint against the saved metrics, tables and figures |
+| `report/main.pdf` | The submitted report |
 | `report/` | LaTeX source of the report (`main.tex`), Question 1 diagrams, generated tables, pre-run predictions, AI-usage log |
 
 ## Question 1 in brief
@@ -53,6 +55,8 @@ pip install -r requirements.txt
 ## Question 2
 
 `Question2/SPEC.md` restates the handout's protocol in implementation terms. Run everything from `Question2/`; the dataset downloads on first use.
+
+`Question2/Question2.ipynb` runs the pipeline in one place, with all cells executed (about 5 minutes on the RTX 4060). It retrains model A, seed 0, as a demonstration, into `checkpoints/notebook/`. It then re-scores all 18 test-set predictors from the committed checkpoints, and every metric matches the saved JSON exactly. The scripts below produce everything the report uses:
 
 ```bash
 python checks.py                                   # Table 1 and extra checks (exits non-zero on failure)
